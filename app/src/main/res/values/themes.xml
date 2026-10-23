@@ -2,4 +2,6 @@
 <resources>
 
     <style name="Theme.CatalogAndroArch" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.CatalogAndroArch.List" parent="Theme.Material3.DayNight.NoActionBar" />
 </resources>
