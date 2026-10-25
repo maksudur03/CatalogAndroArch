@@ -1,7 +1,6 @@
 package com.example.catalogandroarch.di.component
 
-import com.example.catalogandroarch.ProductContract.ProductPresenter
-import com.example.catalogandroarch.di.module.ProductModule
+import com.example.catalogandroarch.ProductViewModel
 import com.example.catalogandroarch.di.scope.ActivityScope
 import dagger.Component
 
@@ -11,7 +10,7 @@ import dagger.Component
  */
 
 @ActivityScope
-@Component(dependencies = [AppComponent::class], modules = [ProductModule::class])
+@Component(dependencies = [AppComponent::class])
 interface ProductComponent {
-    val productPresenter: ProductPresenter
+    val productViewModel: ProductViewModel
 }

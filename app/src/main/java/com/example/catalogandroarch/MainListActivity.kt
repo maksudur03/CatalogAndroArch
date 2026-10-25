@@ -2,20 +2,36 @@ package com.example.catalogandroarch
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.catalogandroarch.data.Product
 import com.example.catalogandroarch.databinding.ActivityMainListBinding
 import com.example.catalogandroarch.di.component.DaggerProductComponent
 import com.example.catalogandroarch.view.ProductAdapter
+import kotlinx.coroutines.launch
 
-class MainListActivity : AppCompatActivity(), ProductContract.ProductView {
+class MainListActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainListBinding
-    private lateinit var presenter: ProductContract.ProductPresenter
     private lateinit var adapter: ProductAdapter
+    private val viewModel: ProductViewModel by viewModels {
+        viewModelFactory {
+            initializer {
+                DaggerProductComponent.builder()
+                    .appComponent((application as CatalogAndroArchApplication).appComponent)
+                    .build()
+                    .productViewModel
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,34 +43,28 @@ class MainListActivity : AppCompatActivity(), ProductContract.ProductView {
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             insets
         }
-        presenter = DaggerProductComponent.builder()
-            .appComponent((application as CatalogAndroArchApplication).appComponent)
-            .build().productPresenter
-        presenter.onAttach(this)
-        presenter.getProducts()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    setProducts(state)
+                }
+            }
+        }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        presenter.onDetach()
-    }
+    private fun setProducts(state: ProductUiState) {
+        when(state) {
+            is ProductUiState.Success -> {
+                adapter = ProductAdapter(state.products)
+                binding.rvProducts.adapter = adapter
+                binding.rvProducts.layoutManager = LinearLayoutManager(this)
+            }
+            is ProductUiState.Loading -> {
 
-    override fun setProducts(list: List<Product>) {
-        adapter = ProductAdapter(list)
-        binding.rvProducts.adapter = adapter
-        binding.rvProducts.layoutManager = LinearLayoutManager(this)
-    }
+            }
+            is ProductUiState.Error -> {
 
-    override fun setEmpty() {
-    }
-
-    override fun showLoading() {
-
-    }
-
-    override fun hideLoading() {
-    }
-
-    override fun showMessage(msg: String) {
+            }
+        }
     }
 }

@@ -67,4 +67,5 @@ dependencies {
     implementation("com.google.dagger:dagger:2.60.1")
     implementation("com.github.bumptech.glide:glide:5.0.9")
     kapt("com.google.dagger:dagger-compiler:2.60.1")
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 }
